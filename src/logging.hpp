@@ -20,8 +20,6 @@
 #include <cstdio>
 #include <utility>
 
-extern thread_local unsigned int this_thread_num;
-
 enum class log_level
 {
     debug = 1,
@@ -36,9 +34,6 @@ enum class log_level
  */
 class logger
 {
-    std::string generate_common_prefix(fmt::text_style const &ts,
-                                       char const *prefix);
-
 public:
     template <typename S, typename... TArgs>
     void log(log_level with_level, char const *prefix,
@@ -66,6 +61,11 @@ public:
 
     void set_level(log_level level) noexcept { m_current_level = level; }
 
+    bool debug_enabled() const noexcept
+    {
+        return m_current_level == log_level::debug;
+    }
+
     void enable_sql() noexcept { m_log_sql = true; }
 
     void enable_sql_data() noexcept { m_log_sql_data = true; }
@@ -79,7 +79,12 @@ public:
     void needs_leading_return() noexcept { m_needs_leading_return = true; }
     void no_leading_return() noexcept { m_needs_leading_return = false; }
 
+    static void init_thread(unsigned int num);
+
 private:
+    std::string generate_common_prefix(fmt::text_style const &ts,
+                                       char const *prefix);
+
     log_level m_current_level = log_level::info;
     bool m_log_sql = false;
     bool m_log_sql_data = false;

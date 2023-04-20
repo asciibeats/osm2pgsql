@@ -1,5 +1,5 @@
-#ifndef OSM2PGSQL_FLEX_TILESET_HPP
-#define OSM2PGSQL_FLEX_TILESET_HPP
+#ifndef OSM2PGSQL_EXPIRE_OUTPUT_HPP
+#define OSM2PGSQL_EXPIRE_OUTPUT_HPP
 
 /**
  * SPDX-License-Identifier: GPL-2.0-or-later
@@ -14,17 +14,16 @@
 
 #include <string>
 #include <utility>
-#include <vector>
+
+class pg_conn_t;
 
 /**
- * A tileset for the flex output. Used for expire.
+ * Output for tile expiry.
  */
-class flex_tileset_t
+class expire_output_t
 {
 public:
-    explicit flex_tileset_t(std::string name) : m_name(std::move(name)) {}
-
-    std::string const &name() const noexcept { return m_name; }
+    expire_output_t() = default;
 
     std::string filename() const noexcept { return m_filename; }
 
@@ -52,10 +51,29 @@ public:
     std::size_t output(quadkey_list_t const &tile_list,
                        std::string const &conninfo) const;
 
-private:
-    /// The name of the tileset
-    std::string m_name;
+    /**
+     * Write the list of tiles to a file.
+     *
+     * \param tiles_at_maxzoom The list of tiles at maximum zoom level
+     */
+    std::size_t
+    output_tiles_to_file(quadkey_list_t const &tiles_at_maxzoom) const;
 
+    /**
+     * Write the list of tiles to a database table.
+     *
+     * \param tiles_at_maxzoom The list of tiles at maximum zoom level
+     * \param conninfo database connection info
+     */
+    std::size_t output_tiles_to_table(quadkey_list_t const &tiles_at_maxzoom,
+                                      std::string const &conninfo) const;
+
+    /**
+     * Create table for tiles.
+     */
+    void create_output_table(pg_conn_t const &connection) const;
+
+private:
     /// The filename (if any) for output
     std::string m_filename;
 
@@ -71,6 +89,6 @@ private:
     /// Zoom level we capture tiles on
     uint32_t m_maxzoom = 0;
 
-}; // class flex_tileset_t
+}; // class expire_output_t
 
-#endif // OSM2PGSQL_FLEX_TILESET_HPP
+#endif // OSM2PGSQL_EXPIRE_OUTPUT_HPP

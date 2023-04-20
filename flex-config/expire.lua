@@ -1,21 +1,17 @@
 -- This config example file is released into the Public Domain.
 --
--- This examples shows how to use tilesets for expire.
+-- This examples shows how to use tile expiry.
 
-local tilesets = {}
+local expire_outputs = {}
 
-tilesets.pois = osm2pgsql.define_tileset({
-    -- Every tileset must have a name. The name is independent of the table
-    -- names although this example file uses the same name for simplicity.
-    name = 'pois',
+expire_outputs.pois = osm2pgsql.define_expire_output({
     -- The zoom level at which we calculate the tiles. This must always be set.
     maxzoom = 14,
     -- The filename where tile list should be written to.
     filename = 'pois.tiles'
 })
 
-tilesets.lines = osm2pgsql.define_tileset({
-    name = 'lines',
+expire_outputs.lines = osm2pgsql.define_expire_output({
     maxzoom = 14,
     -- Instead of writing the tile list to a file, it can be written to a table.
     -- The table will be created if it isn't there already.
@@ -23,8 +19,7 @@ tilesets.lines = osm2pgsql.define_tileset({
 --    schema = 'myschema', -- You can also set a database schema.
 })
 
-tilesets.polygons = osm2pgsql.define_tileset({
-    name = 'polygons',
+expire_outputs.polygons = osm2pgsql.define_expire_output({
     -- You can also set a minimum zoom level in addition to the maximum zoom
     -- level. Tiles in all zoom levels between those two will be written out.
     minzoom = 10,
@@ -32,16 +27,14 @@ tilesets.polygons = osm2pgsql.define_tileset({
     table = 'polygons_tiles'
 })
 
-print("Tilesets:(")
-for name, ts in pairs(tilesets) do
+print("Expire outputs:(")
+for name, eo in pairs(expire_outputs) do
     print("  " .. name
-          .. ": name=".. ts:name()
-          .. " minzoom=" .. ts:minzoom()
-          .. " maxzoom=" .. ts:maxzoom()
-          .. " filename=" .. ts:filename()
-          .. " schema=" .. ts:schema()
-          .. " table=" .. ts:table()
-          .. " (" .. tostring(ts) .. ")")
+          .. ": minzoom=" .. eo:minzoom()
+          .. " maxzoom=" .. eo:maxzoom()
+          .. " filename=" .. eo:filename()
+          .. " schema=" .. eo:schema()
+          .. " table=" .. eo:table())
 end
 print(")")
 
@@ -49,17 +42,17 @@ local tables = {}
 
 tables.pois = osm2pgsql.define_node_table('pois', {
     { column = 'tags', type = 'jsonb' },
-    -- Zero, one or more tilesets are referenced in an `expire` field in
+    -- Zero, one or more expire outputs are referenced in an `expire` field in
     -- the definition of any geometry column using the Web Mercator (3857)
     -- projection.
-    { column = 'geom', type = 'point', not_null = true, expire = { { tileset = 'pois' } } },
+    { column = 'geom', type = 'point', not_null = true, expire = { { output = expire_outputs.pois } } },
 })
 
 tables.lines = osm2pgsql.define_way_table('lines', {
     { column = 'tags', type = 'jsonb' },
-    -- If you only have a single tileset you want to expire into and with
-    -- the defalt parameters, you can specify it directly.
-    { column = 'geom', type = 'linestring', not_null = true, expire = 'lines' },
+    -- If you only have a single expire output and with the default
+    -- parameters, you can specify it directly.
+    { column = 'geom', type = 'linestring', not_null = true, expire = expire_outputs.lines },
 })
 
 tables.polygons = osm2pgsql.define_area_table('polygons', {
@@ -70,7 +63,9 @@ tables.polygons = osm2pgsql.define_area_table('polygons', {
     -- polygons where the width and height of the bounding box is below this
     -- limit the full area is expired, for larger polygons only the boundary.
     -- This setting doesn't have any effect on point or linestring geometries.
-    { column = 'geom', type = 'geometry', not_null = true, expire = { { tileset = 'polygons', mode = 'boundary-only' } } },
+    { column = 'geom', type = 'geometry', not_null = true, expire = {
+        { output = expire_outputs.polygons, mode = 'boundary-only' }
+    }}
 })
 
 tables.boundaries = osm2pgsql.define_relation_table('boundaries', {

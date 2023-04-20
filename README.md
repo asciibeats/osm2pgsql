@@ -49,6 +49,8 @@ Required libraries are
 * [zlib](https://www.zlib.net/)
 * [Boost libraries](https://www.boost.org/), including geometry, system and
   filesystem
+* [CImg](https://cimg.eu/) (Optional, for generalization only)
+* [potrace](https://potrace.sourceforge.net/) (Optional, for generalization only)
 * [PostgreSQL](https://www.postgresql.org/) client libraries
 * [Lua](https://www.lua.org/) (Optional, used for Lua tag transforms
   and the flex output)
@@ -80,7 +82,7 @@ On a Debian or Ubuntu system, this can be done with:
 
 ```sh
 sudo apt-get install make cmake g++ libboost-dev libboost-system-dev \
-  libboost-filesystem-dev libexpat1-dev zlib1g-dev \
+  libboost-filesystem-dev libexpat1-dev zlib1g-dev libpotrace-dev cimg-dev \
   libbz2-dev libpq-dev libproj-dev lua5.3 liblua5.3-dev pandoc
 ```
 
@@ -88,6 +90,7 @@ On a Fedora system, use
 
 ```sh
 sudo dnf install cmake make gcc-c++ boost-devel expat-devel zlib-devel \
+  potrace-devel cimg-devel \
   bzip2-devel postgresql-devel proj-devel proj-epsg lua-devel pandoc
 ```
 
@@ -198,6 +201,11 @@ The output should show something like
 ```
 Lua 5.1.4 (LuaJIT 2.1.0-beta3)
 ```
+
+## Generalization
+
+There is some experimental support for data generalization. See
+https://osm2pgsql.org/generalization/ for details.
 
 ## Help/Support
 

@@ -14,9 +14,16 @@
 #include "util.hpp"
 
 #include <cassert>
+#include <cstdlib>
 #include <stdexcept>
 #include <string>
 #include <utility>
+
+std::size_t pg_result_t::affected_rows() const noexcept
+{
+    char const *const s = PQcmdTuples(m_result.get());
+    return std::strtoull(s, nullptr, 10);
+}
 
 std::atomic<std::uint32_t> pg_conn_t::connection_id{0};
 
@@ -35,6 +42,12 @@ pg_conn_t::pg_conn_t(std::string const &conninfo)
         auto const results = exec("SELECT pg_backend_pid()");
         log_sql("(C{}) New database connection (backend_pid={})",
                 m_connection_id, results.get(0, 0));
+    }
+
+    // PostgreSQL sends notices in many different contexts which aren't that
+    // useful for the user. So we disable them for all connections.
+    if (!get_logger().debug_enabled()) {
+        exec("SET client_min_messages = WARNING");
     }
 }
 

@@ -3,8 +3,10 @@ add_library(osm2pgsql_lib STATIC)
 
 target_sources(osm2pgsql_lib PRIVATE
   db-copy.cpp
+  debug-output.cpp
   dependency-manager.cpp
   expire-tiles.cpp
+  expire-output.cpp
   gazetteer-style.cpp
   geom.cpp
   geom-box.cpp
@@ -50,13 +52,13 @@ if (WITH_LUA)
         flex-index.cpp
         flex-table.cpp
         flex-table-column.cpp
-        flex-tileset.cpp
+        flex-lua-expire-output.cpp
         flex-lua-geom.cpp
         flex-lua-index.cpp
         flex-lua-table.cpp
-        flex-lua-tileset.cpp
         flex-write.cpp
         geom-transform.cpp
+        lua-setup.cpp
         lua-utils.cpp
         output-flex.cpp
         tagtransform-lua.cpp
